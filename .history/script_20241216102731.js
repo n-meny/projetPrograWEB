@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const file = fileInput.files[0];
             if (file) {
                 const text = await file.text();
-                const rows = text.split("\n").filter(row => row.trim() !== "").map(row => row.split(";"));
+                const rows = text.split("\n").map(row => row.split(";"));
                 const headers = rows[0];
                 
                 jsonData = rows.slice(1).map(row => {
@@ -72,55 +72,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Graphique à barres
-        function getPowerByDepartment(data) {
-            const powerByDepartment = {};
-            data.forEach(item => {
-                const department = item.Département;
-                const power = item["Puissance installée"];
-        
-                if (powerByDepartment[department]) {
-                    powerByDepartment[department] += power;
-                } else {
-                    powerByDepartment[department] = power;
-                }
-            });
-        
-            return powerByDepartment;
-        }
-        const powerData = getPowerByDepartment(data);
-        // Extraire les départements et les puissances installées
-        const departments = Object.keys(powerData);
-        const powers = Object.values(powerData);
-
-        var width = 800; // largeur du graphique
-var barHeight = 20; // hauteur de chaque barre
-var margin = 1; // marge entre les barres
-
-// Définir l'échelle pour la puissance installée
-var scale = d3.scaleLinear()
-    .domain([0, d3.max(powers)]) // Plage de puissance installée
-    .range([50, 500]); // Plage d
-        const barChart = d3.select("#bar-chart").append("svg")
-            .attr("width", width)
-            .attr("height", barHeight * powers.length)
-            .style('background-color', 'lightgray');
-        var barg = barChart.selectAll("g")
-            .data(powers)
+        const barChart = d3.select("#bar-chart");
+        const barData = data.slice(0, 10); // Exemple avec 10 premières lignes
+        barChart.selectAll("rect")
+            .data(barData)
             .enter()
-            .append("g")
-            .attr("transform", function (d, i) {
-                return "translate(0," + i * barHeight + ")";
-        });
-        barg.append("rect")
-            .attr("width", function (d) { return scale(d); })
-            .attr("height", barHeight - margin)
-            .style('fill', 'red');
-        barg.append("text")
-            .attr("x", function (d) { return scale(d) + 5; }) // Décalage pour le texte à droite de la barre
-            .attr("y", barHeight / 2)
-            .attr("dy", ".35em")
-            .text(function (d, i) { return departments[i] + ": " + d + " MW"; });
-            
+            .append("rect")
+            .attr("x", (d, i) => i * 30)
+            .attr("y", d => 400 - d.value) // Exemple avec une colonne "value"
+            .attr("width", 20)
+            .attr("height", d => d.value)
+            .attr("fill", "steelblue");
+
         // Graphique à sections
         function countCategorie(data, property) {
             const frequency = {};
@@ -132,37 +95,16 @@ var scale = d3.scaleLinear()
                 frequency[value] = 1;
               }
             });
-            return Object.keys(frequency).map(key => ({
-                Categorie_centrale: key,
-                nombre: frequency[key]
-              }));
+            return frequency;
           }
-        const dataCategory = countCategorie(data, "Catégorie centrale");
-        console.log(dataCategory);
-
-        var svg = d3.select("#pie-chart").append("svg")
+        const datacategory = countCategorie(data, "Catégorie centrale");
+        console.log(datacategory);
+        var svg = d3.select("#pie-chart")
             .attr("width",1000)
             .attr("height",500);
-        var base_diagramme=d3.pie().value(function(d) {return d.nombre;})
-            (dataCategory);
-        var arc = d3.arc().innerRadius(0).outerRadius(200).padAngle(0.05).padRadius(50);
-        var couleur = d3.scaleOrdinal(d3.schemeCategory10);
-        var sections = svg.append("g")
-            .attr("transform","translate(300,250)")
-            .selectAll("path")
-            .data(base_diagramme)
-            .enter().append("path")
-            .attr("d",arc)
-            .attr("fill", function(d){return couleur(d.data.Categorie_centrale);});
-        
-        var libelle =d3.select("g").selectAll("text")
-            .data(base_diagramme)
-            .enter()
-            .append("text")
-            .classed("inside",true).each(function(d){
-                var centre = arc.centroid(d);
-                d3.select(this).attr("x",centre[0]).attr("y",centre[1]).text(d.data.nombre);
-            });
+            
+
+            console.log(categoryData);
 
         // Graphique complexe
         const complexChart = d3.select("#complex-chart");

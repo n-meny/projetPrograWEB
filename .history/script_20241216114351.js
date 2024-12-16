@@ -92,34 +92,23 @@ document.addEventListener("DOMContentLoaded", () => {
         const departments = Object.keys(powerData);
         const powers = Object.values(powerData);
 
-        var width = 800; // largeur du graphique
-var barHeight = 20; // hauteur de chaque barre
-var margin = 1; // marge entre les barres
 
-// Définir l'échelle pour la puissance installée
-var scale = d3.scaleLinear()
-    .domain([0, d3.max(powers)]) // Plage de puissance installée
-    .range([50, 500]); // Plage d
-        const barChart = d3.select("#bar-chart").append("svg")
+        const svg = d3.select("#bar-chart").append("svg")
             .attr("width", width)
             .attr("height", barHeight * powers.length)
             .style('background-color', 'lightgray');
-        var barg = barChart.selectAll("g")
+        var g = svg.selectAll("g")
             .data(powers)
             .enter()
             .append("g")
             .attr("transform", function (d, i) {
                 return "translate(0," + i * barHeight + ")";
         });
-        barg.append("rect")
+        g.append("rect")
             .attr("width", function (d) { return scale(d); })
             .attr("height", barHeight - margin)
             .style('fill', 'red');
-        barg.append("text")
-            .attr("x", function (d) { return scale(d) + 5; }) // Décalage pour le texte à droite de la barre
-            .attr("y", barHeight / 2)
-            .attr("dy", ".35em")
-            .text(function (d, i) { return departments[i] + ": " + d + " MW"; });
+
             
         // Graphique à sections
         function countCategorie(data, property) {
