@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Analyse des Données</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Analyse des Données Publiques</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="visualisation.html" id="visualisation-link" style="display: none;">Visualisation</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section>
+            <h2>Charger un fichier CSV</h2>
+            <input type="file" id="file-input" accept=".csv">
+            <button id="convert-button" style="display: none;">Convertir et Préparer</button>
+        </section>
+        <section>
+            <h2>Instructions</h2>
+            <p>1. Sélectionnez un fichier CSV en cliquant sur "Parcourir".</p>
+            <p>2. Une fois le fichier chargé, cliquez sur "Convertir et Préparer".</p>
+            <p>3. Accédez à la page de visualisation pour explorer les données.</p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 - Projet Analyse des Données</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
