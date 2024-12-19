@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const powerByDepartment = {};
             data.forEach(item => {
                 const department = item.Département;
-                const power = item["Puissance installée"];
+                const power = parseFloat(item["Puissance installée"]); // Parse power as float
         
                 if (powerByDepartment[department]) {
                     powerByDepartment[department] += power;
@@ -93,23 +93,32 @@ document.addEventListener("DOMContentLoaded", () => {
         const powers = Object.values(powerData);
 
         var width = 800; // largeur du graphique
-var barHeight = 20; // hauteur de chaque barre
-var margin = 1; // marge entre les barres
+        var barHeight = 20; // hauteur de chaque barre
+        var margin = 1; // marge entre les barres
 
-// Définir l'échelle pour la puissance installée
-var scale = d3.scaleLinear()
-    .domain([0, d3.max(powers)]) // Plage de puissance installée
-    .range([50, 500]); // Plage d
+        // Définir l'échelle pour la puissance installée
+        var scale = d3.scaleLinear()
+            .domain([0, d3.max(powers)]) // Plage de puissance installée
+            .range([50, 500]); 
         const barChart = d3.select("#bar-chart").append("svg")
             .attr("width", width)
-            .attr("height", barHeight * powers.length)
-            .style('background-color', 'lightgray');
+            .attr("height", barHeight * powers.length + 40) // Adjust height for title
+            .style('background-color', 'white');
+        // titre
+        barChart.append("text")
+            .attr("x", width / 2)
+            .attr("y", 20)
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("font-weight", "bold")
+            .text("Puissance installée par département");
+
         var barg = barChart.selectAll("g")
             .data(powers)
             .enter()
             .append("g")
             .attr("transform", function (d, i) {
-                return "translate(0," + i * barHeight + ")";
+                return "translate(0," + (i * barHeight + 40) + ")";
         });
         barg.append("rect")
             .attr("width", function (d) { return scale(d); })
@@ -141,28 +150,64 @@ var scale = d3.scaleLinear()
         console.log(dataCategory);
 
         var svg = d3.select("#pie-chart").append("svg")
-            .attr("width",1000)
-            .attr("height",500);
-        var base_diagramme=d3.pie().value(function(d) {return d.nombre;})
-            (dataCategory);
+            .attr("width", 1000)
+            .attr("height", 500)
+            .style('background-color', 'white');
+
+        // Add title
+        svg.append("text")
+            .attr("x", 500)
+            .attr("y", 30)
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("font-weight", "bold")
+            .text("Répartition des catégories centrales");
+
+        var base_diagramme = d3.pie().value(function(d) { return d.nombre; })(dataCategory);
         var arc = d3.arc().innerRadius(0).outerRadius(200).padAngle(0.05).padRadius(50);
         var couleur = d3.scaleOrdinal(d3.schemeCategory10);
         var sections = svg.append("g")
-            .attr("transform","translate(300,250)")
+            .attr("transform", "translate(300,250)")
             .selectAll("path")
             .data(base_diagramme)
             .enter().append("path")
-            .attr("d",arc)
-            .attr("fill", function(d){return couleur(d.data.Categorie_centrale);});
+            .attr("d", arc)
+            .attr("fill", function(d) { return couleur(d.data.Categorie_centrale); });
         
-        var libelle =d3.select("g").selectAll("text")
+        var libelle = svg.select("g").selectAll("text")
             .data(base_diagramme)
             .enter()
             .append("text")
-            .classed("inside",true).each(function(d){
+            .classed("inside", true).each(function(d) {
                 var centre = arc.centroid(d);
-                d3.select(this).attr("x",centre[0]).attr("y",centre[1]).text(d.data.nombre);
+                d3.select(this).attr("x", centre[0]).attr("y", centre[1]).text(d.data.nombre);
             });
+
+        // Add percentage labels
+        libelle.append("text")
+            .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+            .attr("dy", ".35em")
+            .style("text-anchor", "middle")
+            .text(function(d) { return Math.round((d.data.nombre / d3.sum(dataCategory, d => d.nombre)) * 100) + "%"; });
+
+        // Add legend
+        var legend = svg.append("g")
+            .attr("transform", "translate(600, 100)")
+            .selectAll("g")
+            .data(base_diagramme)
+            .enter().append("g")
+            .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+        legend.append("rect")
+            .attr("width", 18)
+            .attr("height", 18)
+            .attr("fill", function(d) { return couleur(d.data.Categorie_centrale); });
+
+        legend.append("text")
+            .attr("x", 24)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .text(function(d) { return d.data.Categorie_centrale; });
 
         // Graphique complexe
         const complexChart = d3.select("#complex-chart");
