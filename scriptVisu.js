@@ -1,4 +1,3 @@
-
 // taille du dataset : 50 lignes
 // 1 ligne = 1 enregistrement
 //tailleDataset = length(data);
@@ -146,39 +145,46 @@ d3.json("https://france-geojson.gregoiredavid.fr/repo/regions.geojson").then(fun
 const data = JSON.parse(localStorage.getItem("csvData"));
 
 // Graphique à barres
+// Créer un document pour la puissance installée par département
 function getPowerByDepartment(data) {
     const powerByDepartment = {};
     data.forEach(item => {
         const department = item.Département;
         const power = parseFloat(item["Puissance installée"]); // Parse power as float
 
+        // Arrondir la puissance à l'entier le plus proche
+        const roundedPower = Math.round(power);
+
         if (powerByDepartment[department]) {
-            powerByDepartment[department] += power;
+            powerByDepartment[department] += roundedPower;
         } else {
-            powerByDepartment[department] = power;
+            powerByDepartment[department] = roundedPower;
         }
     });
 
     return powerByDepartment;
 }
+
 const powerData = getPowerByDepartment(data);
 // Extraire les départements et les puissances installées
 const departments = Object.keys(powerData);
 const powers = Object.values(powerData);
 
-var width = 800; // largeur du graphique
+var width = 1000; // largeur du graphique
 var barHeight = 20; // hauteur de chaque barre
 var margin = 1; // marge entre les barres
 
 // Définir l'échelle pour la puissance installée
 var scale = d3.scaleLinear()
     .domain([0, d3.max(powers)]) // Plage de puissance installée
-    .range([50, 500]); 
+    .range([50, 500]);
+// Créer le graphique à barres
 const barChart = d3.select("#bar-chart").append("svg")
     .attr("width", width)
-    .attr("height", barHeight * powers.length + 40) // Adjust height for title
+    .attr("height", barHeight * powers.length + 40) // Ajuster la hauteur pour le titre
     .style('background-color', 'white');
-// titre
+
+// Titre
 barChart.append("text")
     .attr("x", width / 2)
     .attr("y", 20)
@@ -193,18 +199,32 @@ var barg = barChart.selectAll("g")
     .append("g")
     .attr("transform", function (d, i) {
         return "translate(0," + (i * barHeight + 40) + ")";
-});
+    });
+
+// Barre
 barg.append("rect")
+    .attr("x", 230) // Décalage des barres encore plus vers la droite
     .attr("width", function (d) { return scale(d); })
     .attr("height", barHeight - margin)
     .style('fill', 'red');
+
+// Nom du département à gauche
 barg.append("text")
-    .attr("x", function (d) { return scale(d) + 5; }) // Décalage pour le texte à droite de la barre
+    .attr("x", 220) 
     .attr("y", barHeight / 2)
     .attr("dy", ".35em")
-    .text(function (d, i) { return departments[i] + ": " + d + " MW"; });
-    
+    .attr("text-anchor", "end")
+    .text(function (d, i) { return departments[i]; });
+
+// Valeur en MW à droite
+barg.append("text")
+    .attr("x", function (d) { return scale(d) + 230; }) 
+    .attr("y", barHeight / 2)
+    .attr("dy", ".35em")
+    .text(function (d, i) { return d + " MW"; });
+
 // Graphique à sections
+//Creation de documents pour les catégories de centrales
 function countCategorie(data, property) {
     const frequency = {};
     data.forEach(item => {
@@ -221,14 +241,14 @@ function countCategorie(data, property) {
       }));
   }
 const dataCategory = countCategorie(data, "Catégorie centrale");
-console.log(dataCategory);
 
+// Création du graphique
 var svg = d3.select("#pie-chart").append("svg")
     .attr("width", 1000)
     .attr("height", 500)
     .style('background-color', 'white');
 
-// Add title
+// Titre du graphique
 svg.append("text")
     .attr("x", 500)
     .attr("y", 30)
@@ -237,6 +257,7 @@ svg.append("text")
     .style("font-weight", "bold")
     .text("Répartition des catégories centrales");
 
+//Contenu du graphique
 var base_diagramme = d3.pie().value(function(d) { return d.nombre; })(dataCategory);
 var arc = d3.arc().innerRadius(0).outerRadius(200).padAngle(0.05).padRadius(50);
 var couleur = d3.scaleOrdinal(d3.schemeCategory10);
@@ -247,24 +268,24 @@ var sections = svg.append("g")
     .enter().append("path")
     .attr("d", arc)
     .attr("fill", function(d) { return couleur(d.data.Categorie_centrale); });
-
+var total = d3.sum(dataCategory, function(d) { return d.nombre; });
+// Ajouter les textes pour les pourcentages avec le calcul du total
 var libelle = svg.select("g").selectAll("text")
     .data(base_diagramme)
     .enter()
     .append("text")
-    .classed("inside", true).each(function(d) {
+    .classed("inside", true)
+    .each(function(d) {
         var centre = arc.centroid(d);
-        d3.select(this).attr("x", centre[0]).attr("y", centre[1]).text(d.data.nombre);
+        var percentage = (d.data.nombre / total) * 100;
+        var xPosition = centre[0]-10 * 1.4; // Décalage vers la droite
+        var yPosition = centre[1] * 1.4; // Décalage vers le bas
+        d3.select(this)
+            .attr("x", xPosition)
+            .attr("y", yPosition)
+            .text(Math.round(percentage) + "%");
     });
-
-// Add percentage labels
-libelle.append("text")
-    .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
-    .attr("dy", ".35em")
-    .style("text-anchor", "middle")
-    .text(function(d) { return Math.round((d.data.nombre / d3.sum(dataCategory, d => d.nombre)) * 100) + "%"; });
-
-// Add legend
+// legende
 var legend = svg.append("g")
     .attr("transform", "translate(600, 100)")
     .selectAll("g")
