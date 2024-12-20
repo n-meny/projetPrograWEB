@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 delete obj["Sector"];
                 delete obj["Unité"];
                 delete obj["Power station category"];
+                delete obj["point_gps_wsg_84\r"];
                 return obj;
             });
             // Enregistrer les données dans le localStorage pour la visualisation
