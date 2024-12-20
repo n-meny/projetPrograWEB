@@ -53,21 +53,25 @@ const svgMap = d3.select("#map")
     .append("svg")
     .attr("width", widthMap)
     .attr("height", heightMap);
-
-    svgMap.append("text")
-    .attr("x", 500) // Centré horizontalement (largeur du SVG / 2)
-    .attr("y", 30) // Position verticale
+const title = svgMap.append("text")
+    .attr("class", "map-title") // Ajout de classe
+    .attr("x", widthMap / 2)
+    .attr("y", 30)
     .attr("text-anchor", "middle")
     .attr("font-size", "25px")
     .attr("font-weight", "bold")
     .attr("fill", "#1a73e8")
-    .text("Carte des centrales de production hydraulique d'EDF en France");const projection = d3.geoMercator()
+    .text("Carte des centrales de production hydraulique d'EDF en France");
+
+
+
+
+const projection = d3.geoMercator()
     .center([2.2137, 46.2276]) // Centre géographique de la France
     .scale(3000) // Ajuster l'échelle
     .translate([widthMap / 2, heightMap / 2]);
-
+    
 const path = d3.geoPath().projection(projection);
-
 // Charger les données géographiques de la France
 d3.json("https://france-geojson.gregoiredavid.fr/repo/regions.geojson").then(function(geojson) {
     // Afficher les contours des régions
@@ -104,8 +108,7 @@ d3.json("https://france-geojson.gregoiredavid.fr/repo/regions.geojson").then(fun
         
         // Supprimer les cercles existants
         svgMap.selectAll("circle").remove();
-        svgMap.selectAll("text").remove();
-
+        svgMap.selectAll("text:not(.map-title)").remove();
         // Filtrer les données en fonction de la catégorie sélectionnée
         const filteredData = selectedCategory === "Toutes" 
             ? data 
