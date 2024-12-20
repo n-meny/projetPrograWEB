@@ -222,7 +222,7 @@ barg.append("rect")
     .attr("x", 230) // Décalage des barres encore plus vers la droite
     .attr("width", function (d) { return scale(d); })
     .attr("height", barHeight - margin)
-    .style('fill', 'red');
+    .style('fill', 'blue');
 
 // Nom du département à gauche
 barg.append("text")
