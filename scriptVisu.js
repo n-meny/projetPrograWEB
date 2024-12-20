@@ -206,6 +206,7 @@ barChart.append("text")
     .attr("text-anchor", "middle")
     .style("font-size", "25px")
     .style("font-weight", "bold")
+    .attr("fill", "#1a73e8")
     .text("Puissance installée par département");
 
 var barg = barChart.selectAll("g")
@@ -272,6 +273,7 @@ svg.append("text")
     .attr("y", 30)
     .attr("text-anchor", "middle")
     .style("font-size", "25px")
+    .attr("fill", "#1a73e8")
     .style("font-weight", "bold")
     .text("Répartition des catégories centrales");
 
