@@ -43,85 +43,123 @@ const data = JSON.parse(localStorage.getItem("csvData"));
         [resultRow.insertCell().textContent = totalPower.toFixed(2), resultRow.insertCell().textContent = averagePower.toFixed(2)];
 
 
-        // console.debug(data[1]);
 
- // Dimensions de la carte
- const widthMap = 800;
- const heightMap = 1000;
- 
- // Création du conteneur SVG
- const svgMap = d3.select("#map")
-     .append("svg")
-     .attr("width", widthMap)
-     .attr("height", heightMap);
- 
- // Définition de la projection centrée sur la France
- const projection = d3.geoMercator()
-     .center([2.2137, 46.2276]) // Centre approximatif de la France
-     .scale(2500) // Échelle pour zoomer sur la France
-     .translate([widthMap / 2, heightMap / 2]);
- 
- const path = d3.geoPath().projection(projection);
- 
- // Charger les données géographiques de la France
- d3.json("https://france-geojson.gregoiredavid.fr/repo/regions.geojson").then(function(geojson) {
-     // Afficher les contours des régions
-     svgMap.append("g")
-         .selectAll("path")
-         .data(geojson.features)
-         .enter()
-         .append("path")
-         .attr("d", path)
-         .attr("fill", "#e3e3e3") // Gris clair pour la carte
-         .attr("stroke", "#666") // Contours gris foncé
-         .attr("stroke-width", 0.5);
- 
-     // Charger les données des centrales depuis localStorage
-     const data = JSON.parse(localStorage.getItem("csvData"));
-     console.log(data);  // Vérifiez le contenu de data ici
- 
-     // Filtrer les données pour ne garder qu'une centrale par nom (en enlevant les doublons)
-     const uniqueData = Array.from(new Set(data.map(a => a["Centrale"])))
-         .map(id => {
-             return data.find(a => a["Centrale"] === id);
-         });
- 
-     console.log(uniqueData);  // Vérifiez les données filtrées sans doublons
- 
-     // Ajouter les points pour chaque centrale (uniquement les centrales uniques)
-     svgMap.selectAll("circle")
-         .data(uniqueData) // Utiliser uniqueData pour éviter les doublons
-         .enter()
-         .append("circle")
-         .attr("cx", d => {
-             if (d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"]) {
-                 const coords = projection([+d["Coordonnées X_WGS"], +d["Coordonnées Y_WGS"]]);
-                 console.log(coords);  // Vérifiez les coordonnées calculées
-                 return coords[0];
-             }
-             return null;
-         })
-         .attr("cy", d => {
-             if (d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"]) {
-                 const coords = projection([+d["Coordonnées X_WGS"], +d["Coordonnées Y_WGS"]]);
-                 return coords[1];
-             }
-             return null;
-         })
-         .attr("r", d => {
-             const power = +d["Puissance installée"];
-             if (power) {
-                 const radius = Math.sqrt(power) / 20;  // Ajustez le diviseur pour avoir des cercles d'une taille appropriée
-                 return Math.min(radius, 20); // Limitez la taille maximale des cercles
-             }
-             return 0;
-         })
-         .attr("fill", "red")
-         .attr("opacity", 0.6);
- });
- 
+// Dimensions de la carte
+const widthMap = 1000;
+const heightMap = 1000;
+
+// Création du conteneur SVG
+const svgMap = d3.select("#map")
+    .append("svg")
+    .attr("width", widthMap)
+    .attr("height", heightMap);
+
+    svgMap.append("text")
+    .attr("x", 500) // Centré horizontalement (largeur du SVG / 2)
+    .attr("y", 30) // Position verticale
+    .attr("text-anchor", "middle")
+    .attr("font-size", "25px")
+    .attr("font-weight", "bold")
+    .attr("fill", "#1a73e8")
+    .text("Carte des centrales de production hydraulique d'EDF en France");const projection = d3.geoMercator()
+    .center([2.2137, 46.2276]) // Centre géographique de la France
+    .scale(3000) // Ajuster l'échelle
+    .translate([widthMap / 2, heightMap / 2]);
+
+const path = d3.geoPath().projection(projection);
+
+// Charger les données géographiques de la France
+d3.json("https://france-geojson.gregoiredavid.fr/repo/regions.geojson").then(function(geojson) {
+    // Afficher les contours des régions
+    svgMap.append("g")
+        .selectAll("path")
+        .data(geojson.features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("fill", "#e3e3e3")
+        .attr("stroke", "#666")
+        .attr("stroke-width", 0.5);
+
+    // Extraire les catégories uniques
+    const categories = Array.from(new Set(data.map(d => d["Catégorie centrale"])));
+
+    // Créer un élément de sélection pour filtrer par catégorie
+    const filterContainer = d3.select("#filter")
+        .append("select")
+        .attr("id", "category-filter")
+        .on("change", updateMap); // Mettre à jour la carte lors du changement de filtre
+
+    // Ajouter les options au filtre
+    filterContainer.selectAll("option")
+        .data(["Toutes", ...categories])
+        .enter()
+        .append("option")
+        .attr("value", d => d)
+        .text(d => d);
+
+    // Fonction pour mettre à jour la carte en fonction du filtre
+    function updateMap() {
+        const selectedCategory = d3.select("#category-filter").property("value");
+        
+        // Supprimer les cercles existants
+        svgMap.selectAll("circle").remove();
+        svgMap.selectAll("text").remove();
+
+        // Filtrer les données en fonction de la catégorie sélectionnée
+        const filteredData = selectedCategory === "Toutes" 
+            ? data 
+            : data.filter(d => d["Catégorie centrale"] === selectedCategory);
+
+        // Extraire les coordonnées avec leurs noms
+        const coordinates = filteredData
+            .filter(d => d["Coordonnées Y_WGS"] && d["Coordonnées X_WGS"]) // Filtrer les entrées valides
+            .map(d => ({
+                name: d["Centrale"], // Ajouter le nom ou un identifiant
+                coords: [parseFloat(d["Coordonnées Y_WGS"]), parseFloat(d["Coordonnées X_WGS"])] // Inverser les axes
+            }));
+        
+        // Boucle pour afficher chaque point et ajouter les événements de survol
+        coordinates.forEach(item => {
+            const projected = projection(item.coords); 
+
+            // Ajouter le cercle pour le point
+            const circle = svgMap.append("circle")
+                .attr("cx", projected[0])
+                .attr("cy", projected[1])
+                .attr("r", 7) // Taille du cercle
+                .attr("fill", "red")
+                .attr("opacity", 0.6);
+
+            // Ajouter un texte masqué 
+            const text = svgMap.append("text")
+                .attr("x", projected[0] + 12) 
+                .attr("y", projected[1] + 4) 
+                .attr("font-size", "20px")
+                .attr("fill", "black")
+                .text(item.name)
+                .style("visibility", "hidden"); 
+
+            // Ajouter les événements de survol
+            circle
+                .on("mouseover", () => {
+                    text.style("visibility", "visible"); 
+                })
+                .on("mouseout", () => {
+                    text.style("visibility", "hidden"); 
+                });
+        });
+    }
+
+    // Initialiser la carte avec toutes les catégories
+    updateMap();
+});
+
+
+    
 
 // Graphique à barres
+
 // Créer un document pour la puissance installée par département
 function getPowerByDepartment(data) {
     const powerByDepartment = {};
@@ -163,7 +201,7 @@ barChart.append("text")
     .attr("x", width / 2)
     .attr("y", 20)
     .attr("text-anchor", "middle")
-    .style("font-size", "16px")
+    .style("font-size", "25px")
     .style("font-weight", "bold")
     .text("Puissance installée par département");
 
@@ -197,7 +235,10 @@ barg.append("text")
     .attr("dy", ".35em")
     .text(function (d, i) { return d + " MW"; });
 
+
+
 // Graphique à sections
+
 //Creation de documents pour les catégories de centrales
 function countCategorie(data, property) {
     const frequency = {};
@@ -227,7 +268,7 @@ svg.append("text")
     .attr("x", 500)
     .attr("y", 30)
     .attr("text-anchor", "middle")
-    .style("font-size", "16px")
+    .style("font-size", "25px")
     .style("font-weight", "bold")
     .text("Répartition des catégories centrales");
 
