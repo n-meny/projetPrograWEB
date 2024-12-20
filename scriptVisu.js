@@ -2,7 +2,6 @@
 // 1 ligne = 1 enregistrement
 //tailleDataset = length(data);
 const data = JSON.parse(localStorage.getItem("csvData"));
-console.log(data);
        // Afficher le tableau de données
          const table = document.getElementById("data-table");
          const headers = Object.keys(data[0]);
@@ -47,69 +46,80 @@ console.log(data);
         // console.debug(data[1]);
 
  // Dimensions de la carte
-const widthMap = 800;
-const heightMap = 1000;
-
-// Création du conteneur SVG
-const svgMap = d3.select("#map")
-    .append("svg")
-    .attr("width", widthMap)
-    .attr("height", heightMap);
-
-// Définition de la projection centrée sur la France
-const projection = d3.geoMercator()
-    .center([2.2137, 46.2276]) // Centre approximatif de la France
-    .scale(2500) // Échelle pour zoomer sur la France
-    .translate([widthMap / 2, heightMap / 2]);
-
-const path = d3.geoPath().projection(projection);
-
-// Charger les données géographiques de la France
-d3.json("https://france-geojson.gregoiredavid.fr/repo/regions.geojson").then(function(geojson) {
-    // Afficher les contours des régions
-    svgMap.append("g")
-        .selectAll("path")
-        .data(geojson.features)
-        .enter()
-        .append("path")
-        .attr("d", path)
-        .attr("fill", "#e3e3e3") // Gris clair pour la carte
-        .attr("stroke", "#666") // Contours gris foncé
-        .attr("stroke-width", 0.5);
-
-    // Charger les données des centrales depuis localStorage ou une autre source
-    const data = JSON.parse(localStorage.getItem("csvData"));
-
-    // Ajouter les points pour chaque centrale
-    svgMap.selectAll("circle")
-        .data(data)
-        .enter()
-        .append("circle")
-        .attr("cx", d => {
-            // Vérifier que les coordonnées sont présentes
-            if (d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"]) {
-                return projection([+d["Coordonnées X_WGS"], +d["Coordonnées Y_WGS"]])[0];
-            }
-            return null;
-        })
-        .attr("cy", d => {
-            // Vérifier que les coordonnées sont présentes
-            if (d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"]) {
-                return projection([+d["Coordonnées X_WGS"], +d["Coordonnées Y_WGS"]])[1];
-            }
-            return null;
-        })
-        .attr("r", d => {
-            // Calculer le rayon du cercle en fonction de la puissance installée
-            if (d["Puissance installée"]) {
-                return Math.sqrt(+d["Puissance installée"]) / 10; // Ajuster l'échelle selon vos besoins
-            }
-            return 0;
-        })
-        .attr("fill", "red")
-        .attr("opacity", 0.6)
-        .filter(d => d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"]); // Ignorer les points sans coordonnées
-});
+ const widthMap = 800;
+ const heightMap = 1000;
+ 
+ // Création du conteneur SVG
+ const svgMap = d3.select("#map")
+     .append("svg")
+     .attr("width", widthMap)
+     .attr("height", heightMap);
+ 
+ // Définition de la projection centrée sur la France
+ const projection = d3.geoMercator()
+     .center([2.2137, 46.2276]) // Centre approximatif de la France
+     .scale(2500) // Échelle pour zoomer sur la France
+     .translate([widthMap / 2, heightMap / 2]);
+ 
+ const path = d3.geoPath().projection(projection);
+ 
+ // Charger les données géographiques de la France
+ d3.json("https://france-geojson.gregoiredavid.fr/repo/regions.geojson").then(function(geojson) {
+     // Afficher les contours des régions
+     svgMap.append("g")
+         .selectAll("path")
+         .data(geojson.features)
+         .enter()
+         .append("path")
+         .attr("d", path)
+         .attr("fill", "#e3e3e3") // Gris clair pour la carte
+         .attr("stroke", "#666") // Contours gris foncé
+         .attr("stroke-width", 0.5);
+ 
+     // Charger les données des centrales depuis localStorage
+     const data = JSON.parse(localStorage.getItem("csvData"));
+     console.log(data);  // Vérifiez le contenu de data ici
+ 
+     // Filtrer les données pour ne garder qu'une centrale par nom (en enlevant les doublons)
+     const uniqueData = Array.from(new Set(data.map(a => a["Centrale"])))
+         .map(id => {
+             return data.find(a => a["Centrale"] === id);
+         });
+ 
+     console.log(uniqueData);  // Vérifiez les données filtrées sans doublons
+ 
+     // Ajouter les points pour chaque centrale (uniquement les centrales uniques)
+     svgMap.selectAll("circle")
+         .data(uniqueData) // Utiliser uniqueData pour éviter les doublons
+         .enter()
+         .append("circle")
+         .attr("cx", d => {
+             if (d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"]) {
+                 const coords = projection([+d["Coordonnées X_WGS"], +d["Coordonnées Y_WGS"]]);
+                 console.log(coords);  // Vérifiez les coordonnées calculées
+                 return coords[0];
+             }
+             return null;
+         })
+         .attr("cy", d => {
+             if (d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"]) {
+                 const coords = projection([+d["Coordonnées X_WGS"], +d["Coordonnées Y_WGS"]]);
+                 return coords[1];
+             }
+             return null;
+         })
+         .attr("r", d => {
+             const power = +d["Puissance installée"];
+             if (power) {
+                 const radius = Math.sqrt(power) / 20;  // Ajustez le diviseur pour avoir des cercles d'une taille appropriée
+                 return Math.min(radius, 20); // Limitez la taille maximale des cercles
+             }
+             return 0;
+         })
+         .attr("fill", "red")
+         .attr("opacity", 0.6);
+ });
+ 
 
 // Graphique à barres
 // Créer un document pour la puissance installée par département
