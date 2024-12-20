@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const file = fileInput.files[0];
         if (file) {
             const text = await file.text();
-            const rows = text.split("\n").map(row => row.split(";"));
+            const rows = text.split("\n").filter(row => row.trim() !== "").map(row => row.split(";"));
             const headers = rows[0];
             jsonData = rows.slice(1).map(row => {
                 return headers.reduce((acc, header, index) => {
