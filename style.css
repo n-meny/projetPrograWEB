@@ -167,3 +167,21 @@ footer {
         padding: 0.5rem;
     }
 }
+#table-container {
+    width: 100%; /* Largeur du conteneur, peut être ajustée */
+    max-height: 400px; /* Limite la hauteur du tableau, ajustez selon votre besoin */
+    overflow-y: auto; /* Active le défilement vertical */
+    border: 1px solid #ddd; /* Bordure pour séparer le tableau du reste */
+    margin-top: 10px;
+}
+
+#data-table {
+    width: 100%;
+    border-collapse: collapse; /* Pour éviter les doublons de bordures */
+}
+
+#data-table th, #data-table td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
