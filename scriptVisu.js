@@ -1,12 +1,8 @@
 // taille du dataset : 50 lignes
 // 1 ligne = 1 enregistrement
 //tailleDataset = length(data);
-
-document.addEventListener("DOMContentLoaded", () => {
-    
-    // Page de visualisation
-    if (window.location.pathname.includes("visualisation.html")) {
-        const data = JSON.parse(localStorage.getItem("csvData"));
+const data = JSON.parse(localStorage.getItem("csvData"));
+console.log(data);
        // Afficher le tableau de données
          const table = document.getElementById("data-table");
          const headers = Object.keys(data[0]);
@@ -50,28 +46,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // console.debug(data[1]);
 
-        // Dimensions de la carte
-const width = 800;
-const height = 1000;
+ // Dimensions de la carte
+const widthMap = 800;
+const heightMap = 1000;
 
 // Création du conteneur SVG
-const svg = d3.select("#map")
+const svgMap = d3.select("#map")
     .append("svg")
-    .attr("width", width)
-    .attr("height", height);
+    .attr("width", widthMap)
+    .attr("height", heightMap);
 
 // Définition de la projection centrée sur la France
 const projection = d3.geoMercator()
     .center([2.2137, 46.2276]) // Centre approximatif de la France
     .scale(2500) // Échelle pour zoomer sur la France
-    .translate([width / 2, height / 2]);
+    .translate([widthMap / 2, heightMap / 2]);
 
 const path = d3.geoPath().projection(projection);
 
 // Charger les données géographiques de la France
 d3.json("https://france-geojson.gregoiredavid.fr/repo/regions.geojson").then(function(geojson) {
     // Afficher les contours des régions
-    svg.append("g")
+    svgMap.append("g")
         .selectAll("path")
         .data(geojson.features)
         .enter()
@@ -81,68 +77,39 @@ d3.json("https://france-geojson.gregoiredavid.fr/repo/regions.geojson").then(fun
         .attr("stroke", "#666") // Contours gris foncé
         .attr("stroke-width", 0.5);
 
-    // Charger les données des barrages depuis localStorage (ou autre source)
+    // Charger les données des centrales depuis localStorage ou une autre source
     const data = JSON.parse(localStorage.getItem("csvData"));
 
-    // Ajouter les points pour chaque barrage
-    svg.selectAll("circle")
+    // Ajouter les points pour chaque centrale
+    svgMap.selectAll("circle")
         .data(data)
         .enter()
         .append("circle")
-        .attr("cx", d => d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"] 
-            ? projection([+d["Coordonnées X_WGS"], +d["Coordonnées Y_WGS"]])[0] 
-            : null)
-        .attr("cy", d => d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"] 
-            ? projection([+d["Coordonnées X_WGS"], +d["Coordonnées Y_WGS"]])[1] 
-            : null)
-        .attr("r", d => d["Puissance installée"] 
-            ? Math.sqrt(+d["Puissance installée"]) / 10 // Rayon proportionnel à la puissance installée
-            : 0)
+        .attr("cx", d => {
+            // Vérifier que les coordonnées sont présentes
+            if (d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"]) {
+                return projection([+d["Coordonnées X_WGS"], +d["Coordonnées Y_WGS"]])[0];
+            }
+            return null;
+        })
+        .attr("cy", d => {
+            // Vérifier que les coordonnées sont présentes
+            if (d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"]) {
+                return projection([+d["Coordonnées X_WGS"], +d["Coordonnées Y_WGS"]])[1];
+            }
+            return null;
+        })
+        .attr("r", d => {
+            // Calculer le rayon du cercle en fonction de la puissance installée
+            if (d["Puissance installée"]) {
+                return Math.sqrt(+d["Puissance installée"]) / 10; // Ajuster l'échelle selon vos besoins
+            }
+            return 0;
+        })
         .attr("fill", "red")
         .attr("opacity", 0.6)
         .filter(d => d["Coordonnées X_WGS"] && d["Coordonnées Y_WGS"]); // Ignorer les points sans coordonnées
 });
-
-    //     // Graphique à barres
-    //     const barChart = d3.select("#bar-chart");
-    //     const barData = data.slice(0, 10); // Exemple avec 10 premières lignes
-    //     barChart.selectAll("rect")
-    //         .data(barData)
-    //         .enter()
-    //         .append("rect")
-    //         .attr("x", (d, i) => i * 30)
-    //         .attr("y", d => 400 - d.value) // Exemple avec une colonne "value"
-    //         .attr("width", 20)
-    //         .attr("height", d => d.value)
-    //         .attr("fill", "steelblue");
-
-    //     // Graphique à sections
-    //     const pieChart = d3.select("#pie-chart");
-    //     const pieData = d3.pie().value(d => d.value)(barData); // Exemple avec "value"
-    //     const arc = d3.arc().innerRadius(0).outerRadius(150);
-    //     pieChart.selectAll("path")
-    //         .data(pieData)
-    //         .enter()
-    //         .append("path")
-    //         .attr("d", arc)
-    //         .attr("fill", (d, i) => d3.schemeCategory10[i]);
-
-    //     // Graphique complexe
-    //     const complexChart = d3.select("#complex-chart");
-    //     const lineData = data.slice(0, 50); // Exemple avec les 50 premières lignes
-    //     const xScale = d3.scaleLinear().domain([0, lineData.length]).range([0, 500]);
-    //     const yScale = d3.scaleLinear().domain([0, d3.max(lineData, d => d.value)]).range([400, 0]);
-    //     const line = d3.line()
-    //         .x((d, i) => xScale(i))
-    //         .y(d => yScale(d.value));
-    //     complexChart.append("path")
-    //         .datum(lineData)
-    //         .attr("d", line)
-    //         .attr("fill", "none")
-    //         .attr("stroke", "steelblue");
-    }
-});
-const data = JSON.parse(localStorage.getItem("csvData"));
 
 // Graphique à barres
 // Créer un document pour la puissance installée par département
