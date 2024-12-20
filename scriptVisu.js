@@ -151,17 +151,14 @@ function getPowerByDepartment(data) {
     data.forEach(item => {
         const department = item.Département;
         const power = parseFloat(item["Puissance installée"]); // Parse power as float
-
         // Arrondir la puissance à l'entier le plus proche
         const roundedPower = Math.round(power);
-
         if (powerByDepartment[department]) {
             powerByDepartment[department] += roundedPower;
         } else {
             powerByDepartment[department] = roundedPower;
         }
     });
-
     return powerByDepartment;
 }
 
