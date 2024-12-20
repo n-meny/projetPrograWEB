@@ -131,7 +131,7 @@ d3.json("https://france-geojson.gregoiredavid.fr/repo/regions.geojson").then(fun
                 .attr("cx", projected[0])
                 .attr("cy", projected[1])
                 .attr("r", 7) // Taille du cercle
-                .attr("fill", "red")
+                .attr("fill", "blue")
                 .attr("opacity", 0.6);
 
             // Ajouter un texte masqué 
