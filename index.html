@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Analyse des Données</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Analyse des Données Publiques (barrages hydraulique)</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="visualisation.html" id="visualisation-link" style="display: none;">Visualisation</a></li>
+        </ul>
+    </nav>
+    <main>
+        <p>
+            <h2>Présentation des données</h2>
+            <p>Les données étudiées sont des informations sur les centrales de production hydraulique d'EDF en France.</p>
+            <p>Unité des données de puissance : MegaWattHeure (MWH)</p>
+            <p>Source : 
+                <a href="https://www.data.gouv.fr/fr/datasets/centrales-de-production-hydraulique-de-edf-sa" target="_blank">
+                    Centrales de production hydraulique de EDF SA
+                </a>
+            </p>
+            <p id="description_site_GOUV" style="background-color: #f9f9f9; padding: 10px; border-left: 4px solid #007bff;">
+                <strong>Description du site source :</strong><br>
+                Localisation et puissance installée des centrales et unités de production d'EDF SA en exploitation, pour l’hydraulique. 
+                Sur les plus de 400 installations hydrauliques exploitées par EDF, seules les centrales d’une puissance supérieure à 100 MW 
+                sont présentes sur ce jeu de données - à l’exception des centrales dont la réserve secondaire est supérieure ou égale à 20 MW.
+            </p>
+            <p>Le fichier choisi contient des données sur les barrages hydrauliques en France. Nous allons représenter ces données sous forme de différents graphiques/tableaux :</p>
+            <ul>
+                <li>Un tableau listant les barrages par commune et leur puissance respective.</li>
+                <li>Des indicateurs sous forme de tableau :
+                    <ul>
+                        <li>Puissance installée totale des barrages hydrauliques en France</li>
+                        <li>Puissance installée moyenne des barrages hydrauliques en France</li>
+                    </ul>
+                </li>
+                <li>Un graphique en camembert montrant la répartition du type de barrage (catégorie de centrale)</li>
+                <li>Un graphique en camembert montrant la répartition des années de construction (avant-guerre, 30 glorieuses, après 1973).</li>
+                <li>Un graphique en barres montrant la répartition du nombre de barrages par département.</li>
+                <li>Une carte de France indiquant les barrages par commune et leur puissance respective.</li>
+            </ul>
+        </p>
+        <p>
+            <h2>Charger un fichier CSV</h2>
+            <input type="file" id="file-input" accept=".csv">
+            <button id="convert-button" style="display: none;">Convertir en Json et afficher la page de visualisation</button>
+    </p>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 - Projet Analyse des Données</p>
+    </footer>
+    <script src="scriptAccueil.js"></script>
+</body>
+</html>
