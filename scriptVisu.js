@@ -9,20 +9,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (window.location.pathname.includes("visualisation.html")) {
         const data = JSON.parse(localStorage.getItem("csvData"));
        // Afficher le tableau de données
-        // const table = document.getElementById("data-table");
-        // const headers = Object.keys(data[0]);
-        // const headerRow = table.insertRow();
-        // headers.forEach(header => {
-        //     const cell = headerRow.insertCell();
-        //     cell.textContent = header;
-        // });
-        // data.forEach(row => {
-        //     const rowElement = table.insertRow();
-        //     headers.forEach(header => {
-        //         const cell = rowElement.insertCell();
-        //         cell.textContent = row[header];
-        //     });
-        // });
+         const table = document.getElementById("data-table");
+         const headers = Object.keys(data[0]);
+         const headerRow = table.insertRow();
+         headers.forEach(header => {
+             const cell = headerRow.insertCell();
+             cell.textContent = header;
+         });
+         data.forEach(row => {
+             const rowElement = table.insertRow();
+             headers.forEach(header => {
+                 const cell = rowElement.insertCell();
+                 cell.textContent = row[header];
+             });
+         });
 
         // Calculer la somme des puissances et la puissance moyenne
         let totalPower = 0;

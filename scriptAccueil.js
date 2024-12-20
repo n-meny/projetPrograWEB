@@ -26,7 +26,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     return acc;
                 }, {});
             });
-
+            jsonData = jsonData.map(obj => {
+                delete obj["Perimètre juridique"];
+                delete obj["Perimètre spatial"];
+                delete obj["Spatial perimeter"];
+                delete obj["Filière"];
+                delete obj["Sector"];
+                delete obj["Unité"];
+                delete obj["Power station category"];
+                return obj;
+            });
             // Enregistrer les données dans le localStorage pour la visualisation
             localStorage.setItem("csvData", JSON.stringify(jsonData));
 
